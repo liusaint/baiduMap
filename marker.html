@@ -1,0 +1,74 @@
+<!DOCTYPE html>  
+<html>  
+<head>  
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />  
+	<title>添加标注点-百度地图API</title>
+	<script type="text/javascript" src="http://api.map.baidu.com/api?v=1.5&ak=YWdGplhYjUGQ3GtpKNeuTM2S"></script>
+</head>  
+
+<body>
+	<style type="text/css">  
+		html{height:100%}  
+		body{height:100%;margin:0 10px;}  
+		#container{height:100%;margin: 20px;} 
+		.info_ul{
+			margin:0 0 5px 0;
+			padding:0.2em 0;
+		} 
+		.info_li{
+			line-height: 26px;font-size: 15px;
+		}
+		.info_span{
+			width: 50px;display: inline-block;
+		}
+	</style>    
+	<div id="container"></div> 
+	<script type="text/javascript"> 
+		var map = new BMap.Map("container"); //初始化地图
+
+		var points = [
+		{"lng":116,"lat":40,"url":"http://www.baidu.com","id":50,"name":"p1"},
+		{"lng":117,"lat":31,"url":"http://www.taobao.com","id":2,"name":"p2"},
+		{"lng":116,"lat":34,"url":"http://www.qq.com","id":3,"name":"p3"}
+		];//数据准备
+
+		map.centerAndZoom(new BMap.Point(103.388611,35.563611), 5);//设置中心点和显示级别。中国。
+		
+		map.enableScrollWheelZoom();//滚轮放大缩小。
+		
+		addMarker(points);//添加标注。
+
+		function addMarker(points){  // 创建图标对象   
+			var point,marker;
+			// 创建标注对象并添加到地图   
+			for(var i = 0,pointsLen = points.length;i <pointsLen;i++){
+				point = new BMap.Point(points[i].lng,points[i].lat);	
+				marker = new BMap.Marker(point);   
+				map.addOverlay(marker); 
+				//给标注点添加点击事件。使用立即执行函数和闭包
+				(function() {
+					var thePoint = points[i];
+					marker.addEventListener("click",function(){
+						showInfo(this,thePoint);
+					});
+				})();
+			}
+		}
+
+		//显示信息窗口，显示标注点的信息。
+		function showInfo(thisMaker,point){
+			var sContent =
+			'<ul class="info_ul">'
+			+'<li class="info_li">'
+			+'<span class="info_span">id：</span>' + point.id + '</li>'
+			+'<li class="info_li">'
+			+'<span class="info_span">名称：</span>' + point.name + '</li>'
+			+'<li class="info_li"><span class="info_span">查看：</span><a href="'+point.url+'" target="_blank">详情</a></li>'
+			+'</ul>';
+			var infoWindow = new BMap.InfoWindow(sContent);// 创建信息窗口对象
+		   	thisMaker.openInfoWindow(infoWindow);//图片加载完毕重绘infowindow
+		   }
+
+		</script>  
+	</body>  
+	</html>

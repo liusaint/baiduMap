@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<title>左侧菜单</title>
+</head>
+<style type="text/css">
+	body{
+		margin: 4px;
+	}
+	ul,li{
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		font-size:12px;
+	}
+	a{text-decoration: none;
+		color: black
+	}
+
+	.nav_ul li{
+		height: 32px;
+		line-height: 32px;
+		text-indent: 3px;
+	}
+	.nav_ul li:visited{
+		background: #ccc;
+	}
+	.nav_ul li:hover{
+		background: #ccc;
+	}
+	.active_li{
+		background: black;
+	}
+	.active_li a{
+		color: white;
+	}
+</style>
+
+<body>
+	<ul class="nav_ul">
+		<li id="marker"> <a href="marker.html" target="rightFrame">1.标注点、点击事件</a></li>
+		<li id='zoom'> <a href="zoom.html" target="rightFrame">2.缩放级别和中心点</a></li>
+		<li id='track'><a href="track.html" target="rightFrame">3.实时轨迹</a></li>
+		<li id='trackback'><a href="trackback.html" target="rightFrame">4.轨迹回放</a></li>
+
+		</ul>
+		<script>
+			var lis = document.getElementsByTagName('li');
+			var liLen = lis.length;
+			for(var i = 0; i<liLen;i++){
+				lis[i].onclick = function(){
+					for(var j=0; j<liLen;j++){
+						if(j!=i){
+							lis[j].setAttribute('class','');
+						}
+					}
+					this.setAttribute('class','active_li');		
+				}
+			}
+
+
+	// 获取url中的变量值
+	function getQueryString(name) {
+		var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+		var r = window.top.location.search.substr(1).match(reg);
+		if (r != null) return unescape(r[2]); return null;
+	}
+
+	var to = getQueryString('to')||'marker';
+	var init_li = document.getElementById(to);
+	init_li.setAttribute('class','active_li')
+	top.rightFrame.location.href = init_li.getElementsByTagName('a')[0].href;
+</script>
+</body>
+
+</html>

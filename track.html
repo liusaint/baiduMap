@@ -1,0 +1,107 @@
+<!DOCTYPE html>  
+<html>  
+<head>  
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />  
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />  
+	<title>Hello, World</title>  
+	<style type="text/css">  
+		html{height:100%}  
+		body{height:100%;margin:0px;padding:0px}  
+		#container{height:100%;margin: 20px;}  
+	</style>  
+	<script type="text/javascript" src="http://api.map.baidu.com/api?v=1.5&ak=YWdGplhYjUGQ3GtpKNeuTM2S"></script>
+
+</head>  
+
+<body>  
+	<div id="container"></div> 
+	<script type="text/javascript"> 
+		// 实时轨迹demo。
+		// 实际运用的话可能ajax实时读取后台数据，加载到地图上。
+
+
+		// 获取随机数
+		function getRandom(n){
+			return Math.floor(Math.random()*n+1)
+		}
+
+		//在轨迹点上创建图标，并添加点击事件，显示轨迹点信息。points,数组。
+		function addMarker(points){
+			var pointsLen = points.length;
+			if(pointsLen == 0){
+				return;
+			}
+			var myIcon = new BMap.Icon("track.ico", new BMap.Size(5, 5), {
+				offset: new BMap.Size(5, 5) 
+			});
+
+			// 创建标注对象并添加到地图   
+			for(var i = 0;i <pointsLen;i++){
+				var point = new BMap.Point(points[i].lng,points[i].lat);
+				var marker = new BMap.Marker(point, {icon: myIcon});
+				map.addOverlay(marker); 
+			}
+		}    
+
+		//添加线
+		function addLine(points){
+
+			var linePoints = [],pointsLen = points.length,i,polyline;
+			if(pointsLen == 0){
+				return;
+			}
+			// 创建标注对象并添加到地图   
+			for(i = 0;i <pointsLen;i++){
+				linePoints.push(new BMap.Point(points[i].lng,points[i].lat));
+			}
+
+			polyline = new BMap.Polyline(linePoints, {strokeColor:"red", strokeWeight:2, strokeOpacity:0.5});   //创建折线
+			map.addOverlay(polyline);   //增加折线
+		}
+
+		//随机生成新的点，加入到轨迹中。
+		function dynamicLine(){
+			var lng = 100+getRandom(40);
+			var lat = 35+getRandom(30);
+			var id = getRandom(1000);
+			var point = {"lng":lng,"lat":lat,"status":1,"id":id}
+			var makerPoints = [];
+			var newLinePoints = [];
+			var len;
+
+			makerPoints.push(point);			
+			addMarker(makerPoints);//增加对应该的轨迹点
+			points.push(point);
+			bPoints.push(new BMap.Point(lng,lat));
+			len = points.length;
+			newLinePoints = points.slice(len-2, len);//最后两个点用来画线。
+
+			addLine(newLinePoints);//增加轨迹线
+			setZoom(bPoints);
+			setTimeout(dynamicLine, 1000);
+		}
+
+		//根据点信息实时更新地图显示范围，让轨迹完整显示。设置新的中心点和显示级别
+		function setZoom(bPoints){
+			var view = map.getViewport(eval(bPoints));
+			var mapZoom = view.zoom; 
+			var centerPoint = view.center; 
+			map.centerAndZoom(centerPoint,mapZoom);
+		}
+
+		//数据准备,
+		var points = [];//原始点信息数组
+		var bPoints = [];//百度化坐标数组。用于更新显示范围。
+
+		//地图操作开始
+		var map = new BMap.Map("container");  
+
+		map.centerAndZoom(new BMap.Point(103.388611,35.563611), 5); //初始显示中国。
+
+		map.enableScrollWheelZoom();//滚轮放大缩小
+
+		setTimeout(dynamicLine, 1000);//动态生成新的点。
+
+	</script>  
+</body>  
+</html>
