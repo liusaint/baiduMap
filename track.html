@@ -81,12 +81,17 @@
 			setTimeout(dynamicLine, 1000);
 		}
 
-		//根据点信息实时更新地图显示范围，让轨迹完整显示。设置新的中心点和显示级别
+		//根据点信息实时更新地图显示范围，让轨迹完整显示。设置新的中心点和显示级别. 
+		//更新。设置不是每次增加点都重新设置显示范围。因为有可能会想放大了看。
 		function setZoom(bPoints){
 			var view = map.getViewport(eval(bPoints));
-			var mapZoom = view.zoom; 
-			var centerPoint = view.center; 
-			map.centerAndZoom(centerPoint,mapZoom);
+			if(map.oldView != JSON.stringify(view)){
+				var mapZoom = view.zoom; 
+				var centerPoint = view.center; 
+				map.centerAndZoom(centerPoint,mapZoom);
+				map.oldView = JSON.stringify(view);
+			}
+
 		}
 
 		//数据准备,
