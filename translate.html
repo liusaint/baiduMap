@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<style type="text/css">
+		body, html,#allmap {width: 100%;height: 100%;overflow: hidden;margin:0;}
+		#l-map{height:100%;width:78%;float:left;border-right:2px solid #bcbcbc;}
+		#r-result{height:100%;width:20%;float:left;}
+	</style>
+	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=PP1cAvvXb1plFoWlvKxD1qNx9DD0i0qp"></script>
+	<title>批量坐标转换的顺序问题</title>
+</head>
+<body>
+	<div id="allmap"></div>
+
+	<script type="text/javascript">
+		var map = new BMap.Map("allmap");  
+	var top_left_navigation = new BMap.NavigationControl();  //左上角，添加默认缩放平移控件
+	var icon_on = new BMap.Icon("station_on.png", new BMap.Size(20,20));
+	var icon_off = new BMap.Icon("station_off.png", new BMap.Size(20,20));
+	var markers=[];//标注的数组。
+	var oriPoints = [];//原始坐标组。有序。
+	var endPoints = [];//转换后的地图坐标。
+	var gap = 10;//表示一组查几个。
+
+	map.centerAndZoom(new BMap.Point(103.388611,35.563611), 5);  //初始中心点级别 中国。
+	map.enableScrollWheelZoom(); //启用滚轮放大缩小
+	map.addControl(new BMap.NavigationControl());                                 
+	map.addControl(new BMap.OverviewMapControl());
+	map.addControl(new BMap.ScaleControl());                
+	map.enableScrollWheelZoom();                           
+	map.addControl(new BMap.MapTypeControl());
+
+	function Add(JD,WD,name,status)
+	{
+		var point = {lng:JD,lat:WD,name:name,status:status};
+		oriPoints.push(point);
+	}
+
+	function AddOver(){
+		var len = oriPoints.length;
+		var points = [];
+		var ajaxId = 0;
+		var i = 0 ;
+		var j = 0 ;
+		var ajaxLen =0;
+
+		for (; i < len; i++) {	
+			if(i%gap == 0){
+				ajaxId = Math.floor(i/gap);
+				points[ajaxId] = [];
+			}
+			points[ajaxId].push(oriPoints[i]);	
+		}
+
+		ajaxLen = points.length;
+		for (; j < ajaxLen; j++) {
+			(function() {
+				var jj = j;
+				//回调函数，添加marker。
+				var callback = function(data){
+					var ajaxId = jj; 
+					var len = oriPoints.length,i,maker,label,theIcon; 
+					var base = ajaxId * gap; 
+					if(data.status === 0) {
+						var dateLen = data.points.length; 
+						for(i=0;i <dateLen;i++){
+							if(oriPoints[base+i].status != 1){
+								theIcon = icon_off; 
+							}else{
+								theIcon = icon_on; 
+							} 
+							marker = new BMap.Marker(data.points[i],{icon:theIcon}); 
+							label = new BMap.Label(oriPoints[base+i].name,{offset:new BMap.Size(20,0)}); 
+							label.setStyle(
+								{color : "white", 
+								fontSize : "18px", 
+								height : "20px", 
+								lineHeight : "20px", 
+								fontFamily:"楷体", 
+								border : "1px", 
+								backgroundColor : "#0072e3", 
+								borderRadius: "5px"
+							}
+							); 
+							marker.setLabel(label); 
+							map.addOverlay(marker); 
+							markers[base+i]=marker; 
+							endPoints[base+i]=data.points[i];
+							if(oriPoints.length == endPoints.length){//加载完毕。
+								map.setViewport(endPoints);//设置中心点
+							}
+
+						}
+					}
+					callback = null;//清理内存。
+				}
+				posTrans(points[j],callback);//坐标转换新的数据图标添加到地图上。
+			})();
+		}
+	}
+
+	function center(JD,WD)
+	{
+		// window.map.centerAndZoom(new BMap.Point(JD,WD), 8); 	
+		map.setViewport(endPoints);//设置中心点
+	}
+
+	//可修改标注图标。使在线。
+	function onConnected(name)
+	{
+		for (var i = 0; i < markers.length; i++){   
+			if(markers[i].getLabel().content == name){   	
+				markers[i].setIcon(icon_on);
+				markers[i].setAnimation(BMAP_ANIMATION_DROP);
+				return false;
+			}
+		}
+	}
+
+	//可修改标注图标。使离线。
+	function onClosed(name)
+	{
+		for (var i = 0; i < markers.length; i++){   
+			if(markers[i].getLabel().content == name){   	
+				markers[i].setIcon(icon_off);
+				markers[i].setAnimation(BMAP_ANIMATION_DROP);
+				return false;
+			}
+		}
+	}
+
+
+	//坐标转换
+	function posTrans(points,callback){
+		var BdPoints = [],len = points.length,i;
+		for (i = 0; i < len; i++) {
+			BdPoints.push(new BMap.Point(points[i].lng,points[i].lat))
+		}
+		var convertor = new BMap.Convertor();
+		convertor.translate(BdPoints, 1, 5, callback)
+	}
+
+
+
+
+	//测试
+	Add(116.3786889372559,39.90762965106183,'p1',1);
+	Add(116.38632786853032,39.90795884517671,'p2',1);
+	Add(116.39534009082035,39.907432133833574,'p3',1);
+	Add(116.40624058825688,39.90789300648029,'p4',1);
+	Add(116.41413701159672,39.90795884517671,'p5',1);
+	Add(116.42413701159672,39.90795884517671,'p6',1);
+	Add(116.43413701159672,39.90795884517671,'p7',1);
+	Add(116.44413701159672,39.90795884517671,'p8',1);
+	Add(116.45413701159672,39.90795884517671,'p9',1);
+	Add(116.46413701159672,39.90795884517671,'p10',1);
+	Add(116.47413701159672,39.90795884517671,'p11',1);
+	Add(116.48413701159672,39.90795884517671,'p12',1);
+	Add(116.49413701159672,39.90795884517671,'p13',1);
+	Add(116.50413701159672,39.90795884517671,'p14',1);
+	Add(116.51413701159672,39.90795884517671,'p15',1);
+	Add(116.52413701159672,39.90795884517671,'p16',1);
+	Add(116.53413701159672,39.90795884517671,'p17',1);
+	Add(116.54413701159672,39.90795884517671,'p18',1);
+	Add(116.55413701159672,39.90795884517671,'p19',1);
+	Add(116.56413701159672,39.90795884517671,'p20',1);
+	Add(116.57413701159672,39.90795884517671,'p21',1);
+	Add(116.58413701159672,39.90795884517671,'p22',1);
+	Add(116.59413701159672,39.90795884517671,'p23',1);
+	Add(116.60413701159672,39.90795884517671,'p24',1);
+	Add(116.61413701159672,39.90795884517671,'p25',1);
+	AddOver();
+</script>
+
+
+</body>
+</html>
+
