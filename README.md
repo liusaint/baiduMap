@@ -24,3 +24,11 @@
 说明文章：http://blog.csdn.net/liusaint1992/article/details/50082781
 
 演示地址：http://runningls.com/demos/baidumap/index.html?to=trackback
+
+5.大批量多次坐标转换结果返回顺序问题。使用闭包，解决百度坐标转换返回顺序与请求顺序不一致引起的问题。 2016.6.29
+
+说明文章：http://blog.csdn.net/liusaint1992/article/details/51790777
+
+演示地址：http://runningls.com/demos/baidumap/index.html?to=translate
+
+
