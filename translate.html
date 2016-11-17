@@ -87,10 +87,9 @@
 							map.addOverlay(marker); 
 							markers[base+i]=marker; 
 							endPoints[base+i]=data.points[i];
-							if(oriPoints.length == endPoints.length){//加载完毕。
-								map.setViewport(endPoints);//设置中心点
-							}
-
+						}
+						if(oriPoints.length == endPoints.length){//加载完毕。
+							map.setViewport(endPoints);//设置中心点
 						}
 					}
 					callback = null;//清理内存。
